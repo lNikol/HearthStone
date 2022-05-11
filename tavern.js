@@ -1,3 +1,4 @@
+
 "use strict"
 class Tavern{
     constructor(level, coins){
@@ -144,4 +145,3 @@ class refBlock{
         }
         else if(game.tavern.playerCoins < 1){alert("You need 1 coin for refresh tavern")}
     }
-}
