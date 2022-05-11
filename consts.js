@@ -58,5 +58,4 @@ const Elements = {
     BottomCreatureBlock : "bottomCreatureBlock",
     TopCreatureBlock : "topCreatureBlock",
     TopAllCreaturesBlock: "topAllCreaturesBlock",
-    BottomAllCreaturesBlock : "bottomAllCreaturesBlock",
-};
+}
