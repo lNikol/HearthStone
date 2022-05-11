@@ -11,7 +11,6 @@ const defaultCreatureWidth = 100; //100
 const defaultCreatureHeight = 130;
 
 // creature.js
-const regex = /[A-z]+\//gm;
 const defaultTextSize = 26;
 const defaultBottom = 130;
 const percent = 15;

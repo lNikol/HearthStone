@@ -9,7 +9,6 @@ class Tavern{
         this.maxCreatures = this.level >= 5 ? 7:this.level+2;
         this.tempCoins = maxCoins;
         this.update(this.playerCoins, maxCoins);
-        console.log(this.maxCreatures)
     } 
     setTavern(){
         return this;
@@ -29,7 +28,6 @@ class Tavern{
     } 
     updateMaxCreaturesForBuy(){
         this.maxCreatures = this.level >= 5 ? 7:this.level+2;
-        console.log(this.maxCreatures)
         return this.maxCreatures;
     }
     
@@ -96,13 +94,13 @@ class UpBlock{
     }
     
     upgradeCost(tavern){ 
-        if(tavern.playerCoins >= this.cost && game.tavern.level !== 6){
+        if(tavern.playerCoins >= this.cost && game.tavern.level !== 6 && game.battle === false){
             tavern.playerCoins -= this.cost;
             tavern.update(tavern.playerCoins, maxCoins);
             tavern.level++; this.createCost(tavern); tavern.updateMaxCreaturesForBuy();
             this.setCostInBlock(this.createCost(tavern));
-    }
-        else if(tavern.playerCoins <= this.cost) alert(`You have ${tavern.playerCoins}/${this.cost} for upgrade your tavern`)
+        }
+        else if(tavern.playerCoins <= this.cost && game.battle === false) alert(`You have ${tavern.playerCoins}/${this.cost} for upgrade your tavern`)
         else return;
 
         // if(monster.tier == 1 && monster.type == CreatureTypes.Pirate){ //battlecry pirate 1*
@@ -138,13 +136,12 @@ class refBlock{
     setRefreshBlock(){
         return this;
     }
-    refreshTavern(tier, block, maxAmountOfCoins){
-        if(game.tavern.playerCoins >= 1){
+    refreshTavern(block, maxAmountOfCoins){
+        if(game.tavern.playerCoins >= 1 && game.battle === false){
             game.tavern.playerCoins -= this.cost; game.tavern.update(game.tavern.playerCoins, maxAmountOfCoins)
             game.deleteTavernCreatures();
-            game.addCreatureToBlock(block, game.tavern.maxCreatures, tier);
-
+            game.addCreatureToBlock(block, game.playerArray, game.enemyArray, game.tavern.maxCreatures);
         }
-        else{alert("You need 1 coin for refresh tavern")}
+        else if(game.tavern.playerCoins < 1){alert("You need 1 coin for refresh tavern")}
     }
 }

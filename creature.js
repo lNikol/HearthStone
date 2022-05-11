@@ -2,23 +2,9 @@
 // из границ родительного блока (bottomCreatureBlock${count})
 "use strict";
 
-function getIndex(creature){
-  let object;
-  let text = window.navigator.userAgent;
-  let text2 = text.match(regex)
-  let array = [];
-  for(let index = 0 ; index < text2.length; index++){
-    let text3 = text2[index].replace('/','');
-    array.push(text3);
-    
-    if(index == (text2.length-1)) {
-      switch(array[array.length-1]){
-        case "Firefox": object = JSON.parse(creature.attributes[4].nodeValue); break;
-        default: object = JSON.parse(creature.attributes[3].nodeValue); break;
-      }
-    }
-}
-return object;
+function updateAttribute(block, object){
+  block.removeAttribute("insidecreature");
+  block.setAttribute("insideCreature", JSON.stringify(object));
 }
 
 /**
@@ -51,18 +37,28 @@ function checkBottomCoordsXY(x0, x1, x2, y0, y1, y2){
  * @param {object} creatureObject
  */
 function deleteBlock(block, creatureObject){
-    if (block.parentNode){
-      let blockForDelete = game.data.dataBase[creatureObject.tier][creatureObject.id];
-      block.parentNode.removeChild(block);
-      block.style.cssText = `position:relative; left:0; top:0; float: left; margin-left:15px;`;
-      blockForDelete.element = "bottomPlayerCreatures";
-      if(block.attributes.sell){delete game.playerArray[blockForDelete.id]; }
-    }
+  let blockForDelete = game.data.dataBase[creatureObject.tier][creatureObject.id];
+  blockForDelete.element = Elements.TopCreatureBlock; 
+  
+  game.tavern.playerCoins++; // ++
+  game.tavern.update_2(game.tavern.playerCoins);
+  game.tavern.update(game.tavern.playerCoins, maxCoins);
+  block.removeAttribute("sell");
+  block.setAttribute("buy", "only for buy");
+  block.style.marginLeft = 0;
+  
+  block.parentNode.removeChild(block);
+  delete game.playerArray[blockForDelete.id];
+  updateAttribute(block, blockForDelete);
+  game.drawPlayerArray();
 }
 
 function addBlockToPlayer(block, creatureObject){
-    block.style.cssText += `margin-left: 15px;`
+    let blockForDelete = game.data.dataBase[creatureObject.tier][creatureObject.id];
+    block.style.cssText = `position:relative; left:0; top:0; float: left; margin-left:15px;`;
+    blockForDelete.element = "bottomPlayerCreatures"; 
     bottomPlayerCreatures.append(block)
+    updateAttribute(block, blockForDelete);
 }
 
 function deleteTempCreature(creatureObject){
@@ -74,33 +70,32 @@ function deleteTempCreature(creatureObject){
  * 
  * @param {number} id 
  */
-function setCSS_addInBlock(block, id){
-  let objectBlock = JSON.parse(block.attributes.insidecreature.nodeValue)
-  let secondBlock = game.data.dataBase[objectBlock.tier][objectBlock.id];
+function setCSS_addInBlock(block, id, tempCreatureObject){
   block.style.cssText += "relative; left:0; top:0;";
-  if (bottomAllCreaturesBlock.childNodes[id].childNodes[0] === undefined) { 
-    bottomAllCreaturesBlock.childNodes[id].appendChild(block);
+  if (bottomAllCreaturesBlock.childNodes[id].childNodes[0] === undefined && game.battle === false) { 
     block.removeAttribute("handcard");
     block.setAttribute("sell", "only for sell");
-    secondBlock.element = Elements.BottomCreatureBlock;
+    tempCreatureObject.element = Elements.BottomCreatureBlock; 
+    bottomAllCreaturesBlock.childNodes[id].appendChild(block);
+    updateAttribute(block, tempCreatureObject);
   }  
 }
 
 // Добавление существ на стол игрока
-function addCreaturesToPlayerField(e, block){
+function addCreaturesToPlayerField(e, block, tempCreatureObject){
   if (checkBottomCoordsXY(e.pageX, 530, 1370, e.pageY, 520, 580) &&
-  (block.attributes.handcard || block.attributes.sell)) {
+  (block.attributes.handcard || block.attributes.sell) && game.battle === false) {
     block.onmouseup = function(){
       block.style.cssText = `z-index:auto; position:relative; left:0; top:0; float: left; margin-left:15px;`;
       document.onmousemove = null;
-      if(checkBottomCoordsXY(e.pageX, 500, 630, e.pageY, 520, 600)) setCSS_addInBlock(block, 0);
-      else if(checkBottomCoordsXY(e.pageX, 631, 760, e.pageY, 520, 600)) setCSS_addInBlock(block, 1);
-      else if(checkBottomCoordsXY(e.pageX, 761, 890, e.pageY, 520, 600)) setCSS_addInBlock(block, 2);
-      else if(checkBottomCoordsXY(e.pageX, 891, 1020, e.pageY, 520, 600)) setCSS_addInBlock(block, 3);
-      else if(checkBottomCoordsXY(e.pageX, 1021, 1150, e.pageY, 520, 600)) setCSS_addInBlock(block, 4);
-      else if(checkBottomCoordsXY(e.pageX, 1151, 1280, e.pageY, 520, 600)) setCSS_addInBlock(block, 5);
-      else if(checkBottomCoordsXY(e.pageX, 1281, 1410, e.pageY, 520, 600)) setCSS_addInBlock(block, 6);
-      else {block.style.cssText += `left:0px; top:0px; position: relative;`}
+      if(checkBottomCoordsXY(e.pageX, 500, 630, e.pageY, 520, 600)) setCSS_addInBlock(block, 0, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 631, 760, e.pageY, 520, 600)) setCSS_addInBlock(block, 1, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 761, 890, e.pageY, 520, 600)) setCSS_addInBlock(block, 2, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 891, 1020, e.pageY, 520, 600)) setCSS_addInBlock(block, 3, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 1021, 1150, e.pageY, 520, 600)) setCSS_addInBlock(block, 4, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 1151, 1280, e.pageY, 520, 600)) setCSS_addInBlock(block, 5, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 1281, 1410, e.pageY, 520, 600)) setCSS_addInBlock(block, 6, tempCreatureObject);
+      else {block.style.cssText += `left:0px; top:0px; position: relative; margin-left:0;`}
     }
   }
   
@@ -122,7 +117,7 @@ class Creature {
     this.attack = attack;
     this.hp = hp;
     this.type = type;
-    this.tier = tier; // исправить - ??
+    this.tier = tier; 
     this.firstHP = this.hp;  
     this.firstAttack = this.attack;  
     this.id = id;    
@@ -132,7 +127,7 @@ class Creature {
     this.img = this.createImage();
     this.CreatureHpImg = this.createHpImage();
     this.CreatureAttackImg = this.createAttackImage();
-    this.Creatureblock = this.createCreatureBlock(this.element);   
+    this.Creatureblock = this.createCreatureBlock();   
     this.attackText = this.createAttackText();
     this.defaultHP = this.createHpText();  
     this.unicBlock = this.createUniqueBlock();
@@ -161,13 +156,29 @@ class Creature {
     this.replaceHPCSS(this.Creatureblock.childNodes[4]);
     this.replaceAttackCSS(this.Creatureblock.childNodes[3]);
   }
-  
-  removeCreatureBlock(){
-    this.blockInWhichAddCreatureBlock.removeChild(this.Creatureblock); 
+  updateVisibility(visible, visibility){
+    this.visible = visible;
+    this.Creatureblock.style.visibility = visibility;
   }
-  setHP(otherHP) {
+  removeCreatureBlock(){
+    this.updateVisibility(false, "hidden");
+    this.blockInWhichAddCreatureBlock.removeChild(this.Creatureblock); 
+    updateAttribute(this.Creatureblock, this);
+  }
+  setHP(otherHP, array) {
     this.hp = otherHP;
     this.Creatureblock.childNodes[4].textContent = this.hp;
+    if(this.hp <= 0) {
+      setTimeout(() => {
+        this.updateVisibility(false, "hidden");
+        if(this.Creatureblock.parentNode !== null){
+        this.Creatureblock.parentNode.removeChild(this.Creatureblock);
+        this.Creatureblock.removeAttribute("battle");
+        updateAttribute(this.Creatureblock, this);
+        for(let i = 0; i < array.length; i++) if (this === array[i]) delete array[i];
+        }
+      }, 1000);
+    }
     this.update();
   }
 
@@ -185,7 +196,7 @@ class Creature {
     return this.hp;
   }
   
-  createCreatureBlock(element) {
+  createCreatureBlock() {
     
     let creature = createBlock(`creature${this.id}`, `creature`, `z-index:auto`);
     creature.setAttribute("buy", "only for buy");
@@ -212,7 +223,7 @@ class Creature {
     
     let bool = false;
 
-    let thisObj = getIndex(creature);
+    let thisObj = JSON.parse(creature.attributes.insidecreature.nodeValue);
     
     creature.onmouseover = function () {
       
@@ -225,8 +236,8 @@ class Creature {
 
       let tempCreatureImage = document.createElement("img");
       tempCreatureImage.src = `${ImageSrc}/Tier ${thisObj.tier}/${thisObj.id}/${cardImage}.webp`;
-      tempCreature.append(tempCreatureImage);
-      tempCreatureImage.onerror = function(e) {alert('Image not found'); console.clear();};
+      if(tempCreatureImage.src !== undefined) tempCreature.append(tempCreatureImage);
+      tempCreatureImage.onerror = function(e) {/*alert('Image not found');*/ console.clear();};
       let uniqueInfo = thisObj.unique;
       
       if (!bool) {
@@ -306,6 +317,7 @@ class Creature {
      
       creature.style.cssText += `z-index:10000;`;
       function moveAt(e) {
+        
         function replaceCSSforBuyCreatures(creature){
           creature.style.cssText += `left:0px; top:0px; position: relative;`
         }
@@ -313,11 +325,12 @@ class Creature {
         // поменять границы на большие
         // Проверка, коснулись ли блока героя игрока
         if (creature.style.visibility !== "hidden" &&
-        creature.attributes.buy){   
+        creature.attributes.buy && game.battle !== true){   
           creature.onmouseup = function(e){
             creature.style.cssText += `z-index:auto;`;
             creature.style.marginLeft = 0;
             document.onmousemove = null;
+            
             if(checkBottomCoordsXY(e.pageX, 910, 995, e.pageY, 680, 718) && game.tavern.playerCoins >= 3 && bottomPlayerCreatures.childNodes.length <= 2){
               creature.removeAttribute("buy");
               game.tavern.playerCoins -= 3;
@@ -328,8 +341,10 @@ class Creature {
               game.drawPlayerArray();
               
               creature.setAttribute("handcard", "Ready");
-              deleteBlock(creature, thisObj);
+              
+              
               addBlockToPlayer(creature, thisObj);
+              
             }
             else if(checkBottomCoordsXY(e.pageX, 910, 995, e.pageY, 680, 718) &&
             creature.attributes.buy && bottomPlayerCreatures.childNodes.length <= 2){
@@ -354,31 +369,23 @@ class Creature {
       }
       
       document.onmousemove = function (e) {
-        creature.style.cssText += `margin-left:15px;`;
         if(game.battle === false){         
-        // Проверяем, коснулось ли блока topAvatar
-        if (checkTopCoordsXY(e.pageX, 910, 1035, e.pageY, 140, 210) && creature.parentNode && creature.attributes.sell) {
-          // Прототип продажи и удаления существа (не удаляется из бд новые значения) (прописано, но не активизировано)
-            creature.onmouseup = function(){
-            creature.style.cssText += `z-index:auto;`;
-            creature.style.marginLeft = 0;
+          let blockForAdd = game.data.dataBase[thisObj.tier][thisObj.id];
+          // Проверяем, коснулось ли блока topAvatar
+        if (checkTopCoordsXY(e.pageX, 900, 1045, e.pageY, 140, 210) && creature.attributes.sell) {
+          // Продажа и удаление существа 
+          creature.onmouseup = function(){
             document.onmousemove = null;
-            game.drawPlayerArray();
-            deleteBlock(creature, thisObj);            
-            game.tavern.playerCoins++; // ++
-            game.tavern.update_2(game.tavern.playerCoins);
-            game.tavern.update(game.tavern.playerCoins, maxCoins);
-            creature.removeAttribute("sell");
-            creature.setAttribute("buy", "only for buy");
-            creature.style.marginLeft = 0;
+            
+            deleteBlock(creature, blockForAdd);
           }
         }
         else{replaceCreatureCSS(creature);}
 
           creature.style.position = "absolute";
-          deleteTempCreature(thisObj);
+          deleteTempCreature(blockForAdd);
           moveAt(e);
-          addCreaturesToPlayerField(e, creature);
+          addCreaturesToPlayerField(e, creature, blockForAdd);
         }
       };
       
