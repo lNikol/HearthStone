@@ -2,12 +2,7 @@
 // переделать счетчики блоков на более лучшее, чтобы можно было 
 // спокойоно добавить блок куда угодно,без привязки к конкретному значению
 
-/**
- * @param {number} tier
- * @param {number} attack
- * @param {number} hp
- * @param {number} id
- */
+
 class Creature2 {
     constructor(tier, attack, hp, type, id, unique, width = 100, height = 130) {
       this.unique = unique;

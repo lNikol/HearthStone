@@ -1,3 +1,4 @@
+
 "use strict"
 class Tavern{
     constructor(level, coins){
@@ -6,11 +7,8 @@ class Tavern{
         this.upgradeBlock1 = new UpBlock(this);
         this.refreshBlock1 = new refBlock(1);
         this.playerCoins = coins;
-        this.enemyLevel = this.level;
-        this.playerLevel = this.level;
         this.maxCreatures = this.level >= 5 ? 7:this.level+2;
         this.tempCoins = maxCoins;
-
         this.update(this.playerCoins, maxCoins);
     } 
     setTavern(){
@@ -99,9 +97,8 @@ class UpBlock{
     upgradeCost(tavern){ 
         if(tavern.playerCoins >= this.cost && game.tavern.level !== 6 && game.battle === false){
             tavern.playerCoins -= this.cost;
-            tavern.level++; tavern.playerLevel++; tavern.enemyLevel++;
             tavern.update(tavern.playerCoins, maxCoins);
-            this.createCost(tavern); tavern.updateMaxCreaturesForBuy();
+            tavern.level++; this.createCost(tavern); tavern.updateMaxCreaturesForBuy();
             this.setCostInBlock(this.createCost(tavern));
         }
         else if(tavern.playerCoins <= this.cost && game.battle === false) alert(`You have ${tavern.playerCoins}/${this.cost} for upgrade your tavern`)
@@ -148,4 +145,3 @@ class refBlock{
         }
         else if(game.tavern.playerCoins < 1){alert("You need 1 coin for refresh tavern")}
     }
-}

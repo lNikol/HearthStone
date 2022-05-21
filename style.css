@@ -21,8 +21,9 @@
     height: 30px; 
     font-size:26px;
     position:relative; 
+    color:black; 
     font-weight:bold; 
-    text-shadow: black 1.5px 0 2px; 
+    text-shadow: white 1.5px 0 3px; 
     bottom:76px; 
     left:135px;
 }

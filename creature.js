@@ -86,7 +86,7 @@ function addCreaturesToPlayerField(e, block, tempCreatureObject){
   if (checkBottomCoordsXY(e.pageX, 530, 1370, e.pageY, 520, 580) &&
   (block.attributes.handcard || block.attributes.sell) && game.battle === false) {
     block.onmouseup = function(){
-      block.style.cssText = `z-index:auto; position:relative; left:0; top:0; float: left; `;
+      block.style.cssText = `z-index:auto; position:relative; left:0; top:0; float: left; margin-left:15px;`;
       document.onmousemove = null;
       if(checkBottomCoordsXY(e.pageX, 500, 630, e.pageY, 520, 600)) setCSS_addInBlock(block, 0, tempCreatureObject);
       else if(checkBottomCoordsXY(e.pageX, 631, 760, e.pageY, 520, 600)) setCSS_addInBlock(block, 1, tempCreatureObject);
@@ -170,17 +170,14 @@ class Creature {
     this.Creatureblock.childNodes[4].textContent = this.hp;
     if(this.hp <= 0) {
       setTimeout(() => {
-        this.hp = this.firstHP;
-        this.Creatureblock.childNodes[4].textContent = this.hp;
         this.updateVisibility(false, "hidden");
         if(this.Creatureblock.parentNode !== null){
         this.Creatureblock.parentNode.removeChild(this.Creatureblock);
         this.Creatureblock.removeAttribute("battle");
         updateAttribute(this.Creatureblock, this);
-        for(let i = 0; i < array.length; i++) if (this === array[i]) delete array[i]; 
+        for(let i = 0; i < array.length; i++) if (this === array[i]) delete array[i];
         }
       }, 1000);
-     
     }
     this.update();
   }
@@ -231,7 +228,6 @@ class Creature {
     creature.onmouseover = function () {
       
       let tempCreature = document.createElement("div");
-      tempCreature.className = "tempCreature"
       tempCreature.id = `tempCreature${thisObj.id}`;
       tempCreature.style.cssText = `z-index: ${thisObj.id};
         width:100px; height: 100px; position:absolute; display:inline-block;
@@ -311,18 +307,17 @@ class Creature {
         }
       }
     };
+
     // Фикс бага при продажи существа (не удалялись временные блоки)
-    creature.onmouseout = function () { deleteTempCreature(thisObj); deleteAllTempCreatures(); };
+    creature.onmouseout = function () { deleteTempCreature(thisObj);  };
 
     creature.onselectstart = function () { return false; };
     creature.onmousedown = function (e) {
       deleteTempCreature(thisObj);
-      deleteAllTempCreatures();
      
       creature.style.cssText += `z-index:10000;`;
       function moveAt(e) {
         
-        deleteAllTempCreatures();
         function replaceCSSforBuyCreatures(creature){
           creature.style.cssText += `left:0px; top:0px; position: relative;`
         }
@@ -346,6 +341,8 @@ class Creature {
               game.drawPlayerArray();
               
               creature.setAttribute("handcard", "Ready");
+              
+              
               addBlockToPlayer(creature, thisObj);
               
             }
@@ -379,6 +376,7 @@ class Creature {
           // Продажа и удаление существа 
           creature.onmouseup = function(){
             document.onmousemove = null;
+            
             deleteBlock(creature, blockForAdd);
           }
         }
@@ -395,6 +393,7 @@ class Creature {
       // отследить окончание переноса
       creature.onmouseup = function () {
         creature.style.cssText += `z-index:auto;`;
+        
         document.onmousemove = null;
         creature.onmouseup = null;
        };
@@ -504,4 +503,3 @@ class Creature {
       }
     }
   }
-}
