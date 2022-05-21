@@ -1,6 +1,52 @@
 // Сделать проверку выхода блока существа(creature${count})
 // из границ родительного блока (bottomCreatureBlock${count})
 "use strict";
+function createUniqueBlock(creatureObject){
+  for (let i = 0;  i < creatureObject.unique.length; i++){
+    switch(creatureObject.unique[i]){
+    case Unics.Divine_Shield:
+      let uniqueBlockDivine_Shield = 
+      createBlock("uniqueBlockDivine_Shield", "uniqueBlock",
+      `width: ${defaultCreatureWidth}px; height: ${defaultCreatureHeight + 10}px; 
+      opacity:0.3; position:relative; z-index:auto;
+      border-radius:50%; bottom:${defaultBottom * 2}px; left:0; background-color:gold; user-select:none;`
+      );
+      
+      uniqueBlockDivine_Shield.onselectstart = function () { return false; };
+      creatureObject.Creatureblock.append(uniqueBlockDivine_Shield) ;
+      break;
+
+     case Unics.Reborn:
+        let uniqueBlockReborn = 
+        createBlock("uniqueBlockReborn", "uniqueBlock",
+        `width: ${defaultCreatureWidth + 10}px; height: ${defaultCreatureHeight + 10}px; 
+        opacity:0.3; position:relative; z-index:auto;
+        border-radius:50%; bottom:${defaultBottom*2}px; left:-5px; background-color:rgb(31, 81, 255);
+        user-select:none;`
+        );
+
+        uniqueBlockReborn.onselectstart = function () { return false; };
+        creatureObject.Creatureblock.append(uniqueBlockReborn) ;
+        break;
+    
+    case Unics.Deathrattle:
+      let deathImg = createImageBlock(`${ImageSrc}/Death.png`, "deathImg", "uniqueImage", 
+      `width:25px; height:25px; position:relative; z-index:auto;
+      bottom: ${ defaultBottom + 12 }px; transform: scale(1.5); margin-left:40px;`);
+      creatureObject.Creatureblock.append(deathImg)
+      break;
+    
+    case Unics.Poison:
+      let poisonImg = createImageBlock(`${ImageSrc}/poison.png`, "poisonImg", "uniqueImage",
+      `width:25px; height:32px; position:relative; z-index:auto;
+      bottom: ${ defaultBottom + 19 }px; transform: scale(1.1); margin-left:40px;
+      `);
+      creatureObject.Creatureblock.append(poisonImg)
+      break;
+    }
+  }
+}
+
 
 function updateAttribute(block, object){
   block.removeAttribute("insidecreature");
@@ -71,7 +117,7 @@ function deleteTempCreature(creatureObject){
  * @param {number} id 
  */
 function setCSS_addInBlock(block, id, tempCreatureObject){
-  block.style.cssText += "relative; left:0; top:0;";
+  block.style.cssText += "relative; left:0; top:0; margin-left: 0;";
   if (bottomAllCreaturesBlock.childNodes[id].childNodes[0] === undefined && game.battle === false) { 
     block.removeAttribute("handcard");
     block.setAttribute("sell", "only for sell");
@@ -86,7 +132,7 @@ function addCreaturesToPlayerField(e, block, tempCreatureObject){
   if (checkBottomCoordsXY(e.pageX, 530, 1370, e.pageY, 520, 580) &&
   (block.attributes.handcard || block.attributes.sell) && game.battle === false) {
     block.onmouseup = function(){
-      block.style.cssText = `z-index:auto; position:relative; left:0; top:0; float: left; margin-left:15px;`;
+      block.style.cssText = `z-index:auto; position:relative; left:0; top:0; float: left; `;
       document.onmousemove = null;
       if(checkBottomCoordsXY(e.pageX, 500, 630, e.pageY, 520, 600)) setCSS_addInBlock(block, 0, tempCreatureObject);
       else if(checkBottomCoordsXY(e.pageX, 631, 760, e.pageY, 520, 600)) setCSS_addInBlock(block, 1, tempCreatureObject);
@@ -114,6 +160,7 @@ class Creature {
     this.element = Elements.TopCreatureBlock;
     this.visible = true;
     this.unique = unique;
+    this.firstUnique = this.unique;
     this.attack = attack;
     this.hp = hp;
     this.type = type;
@@ -130,17 +177,20 @@ class Creature {
     this.Creatureblock = this.createCreatureBlock();   
     this.attackText = this.createAttackText();
     this.defaultHP = this.createHpText();  
-    this.unicBlock = this.createUniqueBlock();
+    createUniqueBlock(this);
     
   }
 
   replaceHPCSS(block) {
     // Изменение шрифта и отступа в зависимости от числа
+
     if (this.hp >= 10 && this.hp <= 99) block.style.cssText += `font-size: ${totalTextSize}px; left:${leftPX + 3}px; 
     bottom:${totalBottom}px;`;
     else if (this.hp >= 100) block.style.cssText += `font-size: ${totalTextSize-1}px; left:${leftPX-1}px; bottom:${totalBottom}px;`;
     else block.style.cssText += `font-size:${defaultTextSize}px; left:${leftPX + 6}px; bottom:${defaultBottom - 1}px;`;
-    if (this.hp !== this.firstHP) block.style.cssText += `color: green;` // lightgreen
+    setTimeout(() => {
+      if (game.battle === true && this.hp !== this.firstHP) block.style.cssText += `color: green;`;
+      else if (game.battle === false && this.hp === this.firstHP && block.style.color === "green") block.style.cssText += "color:black"; }, 1); // lightgreen
 
   }
 
@@ -149,7 +199,9 @@ class Creature {
     if (this.attack >= 10 && this.attack <= 99) block.style.cssText += `font-size: ${totalTextSize - 1}px; left:4px; bottom:${totalBottom - 28}px;`;
     else if (this.attack >= 100) block.style.cssText += `font-size: ${totalTextSize - 2}px; left:0px; bottom:${totalBottom - 28}px;`;
     else block.style.cssText += `font-size:${defaultTextSize}px; left:8px; bottom:${defaultBottom - 27 - 1}px;`;
-    if (this.attack !== this.firstAttack) block.style.cssText += `color: green;` // lightgreen
+    setTimeout(() => {
+      if (game.battle === true && this.attack !== this.firstAttack) block.style.cssText += `color: green;` 
+      else if (game.battle === false && this.attack === this.firstAttack && block.style.color === "green") block.style.cssText += "color:black";}, 1); // lightgreen
   }
 
   update() {
@@ -168,17 +220,30 @@ class Creature {
   setHP(otherHP, array) {
     this.hp = otherHP;
     this.Creatureblock.childNodes[4].textContent = this.hp;
-    if(this.hp <= 0) {
-      setTimeout(() => {
-        this.updateVisibility(false, "hidden");
-        if(this.Creatureblock.parentNode !== null){
-        this.Creatureblock.parentNode.removeChild(this.Creatureblock);
-        this.Creatureblock.removeAttribute("battle");
-        updateAttribute(this.Creatureblock, this);
-        for(let i = 0; i < array.length; i++) if (this === array[i]) delete array[i];
-        }
+    if(this.hp <= 0 && game.battle === true) {
+    setTimeout(() => {
+      this.hp = this.firstHP;
+      this.Creatureblock.childNodes[4].textContent = this.hp;
+      this.Creatureblock.removeAttribute("battle");
+      this.Creatureblock.setAttribute("buy", "only for buy");
+      this.updateVisibility(false, "hidden");
+      if(this.Creatureblock.parentNode !== null){
+      this.Creatureblock.parentNode.removeChild(this.Creatureblock);
+      updateAttribute(this.Creatureblock, this);
+      if (this.Creatureblock.childNodes[5] !== undefined && (this.Creatureblock.childNodes[5].id === "uniqueBlockDivine_Shield" || this.Creatureblock.childNodes[5].id === "uniqueBlockReborn")  && this.Creatureblock !== undefined) this.Creatureblock.childNodes[5].style.visibility = "visible";
+      for(let i = 0; i < array.length; i++) if (this === array[i]) delete array[i];
+      }
       }, 1000);
+     
     }
+    else if(this.hp > 0 && this.battle === false) { this.hp = this.firstHP; this.Creatureblock.childNodes[4].textContent = this.hp;}
+    if(this.Creatureblock.attributes.sell) this.Creatureblock.removeAttribute("sell")
+    if(game.battle === false && this.hp > 0){
+    this.unique = this.firstUnique;
+    if (this.Creatureblock.childNodes[5] !== undefined && (this.Creatureblock.childNodes[5].id === "uniqueBlockDivine_Shield" || this.Creatureblock.childNodes[5].id === "uniqueBlockReborn")  && this.Creatureblock !== undefined) this.Creatureblock.childNodes[5].style.visibility = "visible";
+    this.Creatureblock.attributes.battle ? this.Creatureblock.removeAttribute("battle"): '';
+  }
+    
     this.update();
   }
 
@@ -186,14 +251,6 @@ class Creature {
     this.attack = otherAttack;
     this.Creatureblock.childNodes[3].textContent = this.attack;
     this.update();
-  }
-
-  setCreature() {
-    return this;
-  }
-
-  getHP() {
-    return this.hp;
   }
   
   createCreatureBlock() {
@@ -228,6 +285,7 @@ class Creature {
     creature.onmouseover = function () {
       
       let tempCreature = document.createElement("div");
+      tempCreature.className = "tempCreature"
       tempCreature.id = `tempCreature${thisObj.id}`;
       tempCreature.style.cssText = `z-index: ${thisObj.id};
         width:100px; height: 100px; position:absolute; display:inline-block;
@@ -307,17 +365,18 @@ class Creature {
         }
       }
     };
-
     // Фикс бага при продажи существа (не удалялись временные блоки)
-    creature.onmouseout = function () { deleteTempCreature(thisObj);  };
+    creature.onmouseout = function () { deleteTempCreature(thisObj); deleteAllTempCreatures(); };
 
     creature.onselectstart = function () { return false; };
     creature.onmousedown = function (e) {
       deleteTempCreature(thisObj);
+      deleteAllTempCreatures();
      
       creature.style.cssText += `z-index:10000;`;
       function moveAt(e) {
         
+        deleteAllTempCreatures();
         function replaceCSSforBuyCreatures(creature){
           creature.style.cssText += `left:0px; top:0px; position: relative;`
         }
@@ -341,8 +400,6 @@ class Creature {
               game.drawPlayerArray();
               
               creature.setAttribute("handcard", "Ready");
-              
-              
               addBlockToPlayer(creature, thisObj);
               
             }
@@ -365,7 +422,7 @@ class Creature {
         creature.onmouseup = function() {
         creature.style.cssText += `z-index:auto;`;
         document.onmousemove = null; 
-        creature.style.cssText += `left:0px; top:0px; float:left; margin-left:15px; position: relative;`}
+        creature.style.cssText += `left:0px; top:0px; float:left; position: relative;`}
       }
       
       document.onmousemove = function (e) {
@@ -376,7 +433,6 @@ class Creature {
           // Продажа и удаление существа 
           creature.onmouseup = function(){
             document.onmousemove = null;
-            
             deleteBlock(creature, blockForAdd);
           }
         }
@@ -393,7 +449,6 @@ class Creature {
       // отследить окончание переноса
       creature.onmouseup = function () {
         creature.style.cssText += `z-index:auto;`;
-        
         document.onmousemove = null;
         creature.onmouseup = null;
        };
@@ -457,49 +512,4 @@ class Creature {
     return atImage;
   }
 
-  createUniqueBlock(){
-
-    for (let i = 0;  i < this.unique.length; i++){
-      switch(this.unique[i]){
-      case Unics.Divine_Shield:
-        let uniqueBlockDivine_Shield = 
-        createBlock("uniqueBlockDivine_Shield", "",
-        `width: ${defaultCreatureWidth}px; height: ${defaultCreatureHeight + 10}px; 
-        opacity:0.3; position:relative; z-index:auto;
-        border-radius:50%; bottom:${defaultBottom * 2}px; left:0; background-color:gold; user-select:none;`
-        );
-        
-        uniqueBlockDivine_Shield.onselectstart = function () { return false; };
-        this.Creatureblock.append(uniqueBlockDivine_Shield) ;
-        break;
-
-       case Unics.Reborn:
-          let uniqueBlockReborn = 
-          createBlock("uniqueBlockReborn", "",
-          `width: ${defaultCreatureWidth + 10}px; height: ${defaultCreatureHeight + 10}px; 
-          opacity:0.3; position:relative; z-index:auto;
-          border-radius:50%; bottom:${defaultBottom*2}px; left:-5px; background-color:rgb(31, 81, 255);
-          user-select:none;`
-          );
-
-          uniqueBlockReborn.onselectstart = function () { return false; };
-          this.Creatureblock.append(uniqueBlockReborn) ;
-          break;
-      
-      case Unics.Deathrattle:
-        let deathImg = createImageBlock(`${ImageSrc}/Death.png`, "deathImg", "", 
-        `width:25px; height:25px; position:relative; z-index:auto;
-        bottom: ${ defaultBottom + 12 }px; transform: scale(1.5); margin-left:40px;`);
-        this.Creatureblock.append(deathImg)
-        break;
-      
-      case Unics.Poison:
-        let poisonImg = createImageBlock(`${ImageSrc}/poison.png`, "poisonImg", "",
-        `width:25px; height:32px; position:relative; z-index:auto;
-        bottom: ${ defaultBottom + 19 }px; transform: scale(1.1); margin-left:40px;
-        `);
-        this.Creatureblock.append(poisonImg)
-        break;
-      }
-    }
-  }
+}

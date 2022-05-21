@@ -6,7 +6,6 @@ const cardImage = 0;
 const origImage = 1;
 const goldenCardImage = 2;
 
-
 //generateHTML.js
 const defaultCreatureWidth = 100; //100
 const defaultCreatureHeight = 130;
@@ -29,6 +28,7 @@ let playerCoins = 0;
 let heroCount = 0;
 let turn = 9; // 3 - нулевой ход
 let maxCoins = (turn >= 10) ? 10: turn;
+const timeForTimeout = 1300 + turn * 0.01;
 
 const CreatureTypes = {
     All : "All",
