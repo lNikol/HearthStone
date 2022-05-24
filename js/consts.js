@@ -7,8 +7,8 @@ const origImage = 1;
 const goldenCardImage = 2;
 
 //generateHTML.js
-const defaultCreatureWidth = 100; //100
-const defaultCreatureHeight = 130;
+const defaultCreatureWidth = 110;
+const defaultCreatureHeight = 145;
 
 // creature.js
 const defaultTextSize = 26;

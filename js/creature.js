@@ -7,9 +7,9 @@ function createUniqueBlock(creatureObject){
     case Unics.Divine_Shield:
       let uniqueBlockDivine_Shield = 
       createBlock("uniqueBlockDivine_Shield", "uniqueBlock",
-      `width: ${defaultCreatureWidth}px; height: ${defaultCreatureHeight + 10}px; 
+      ` ${defaultCreatureWidth + 10}px; height: ${defaultCreatureHeight + 10}px; 
       opacity:0.3; position:relative; z-index:auto;
-      border-radius:50%; bottom:${defaultBottom * 2}px; left:0; background-color:gold; user-select:none;`
+      border-radius:50%; bottom:${defaultBottom * 2 + 16}px; left:0; background-color:gold; user-select:none;`
       );
       
       uniqueBlockDivine_Shield.onselectstart = function () { return false; };
@@ -21,7 +21,7 @@ function createUniqueBlock(creatureObject){
         createBlock("uniqueBlockReborn", "uniqueBlock",
         `width: ${defaultCreatureWidth + 10}px; height: ${defaultCreatureHeight + 10}px; 
         opacity:0.3; position:relative; z-index:auto;
-        border-radius:50%; bottom:${defaultBottom*2}px; left:-5px; background-color:rgb(31, 81, 255);
+        border-radius:50%; bottom:${defaultBottom * 2 + 16}px; left:-4px; background-color:rgb(31, 81, 255);
         user-select:none;`
         );
 
@@ -30,14 +30,14 @@ function createUniqueBlock(creatureObject){
         break;
     
     case Unics.Deathrattle:
-      let deathImg = createImageBlock(`${ImageSrc}/Death.png`, "deathImg", "uniqueImage", 
+      let deathImg = createImageBlock(`${ImageSrc}/battle/Death.png`, "deathImg", "uniqueImage", 
       `width:25px; height:25px; position:relative; z-index:auto;
       bottom: ${ defaultBottom + 12 }px; transform: scale(1.5); margin-left:40px;`);
       creatureObject.Creatureblock.append(deathImg)
       break;
     
     case Unics.Poison:
-      let poisonImg = createImageBlock(`${ImageSrc}/poison.png`, "poisonImg", "uniqueImage",
+      let poisonImg = createImageBlock(`${ImageSrc}/battle/poison.png`, "poisonImg", "uniqueImage",
       `width:25px; height:32px; position:relative; z-index:auto;
       bottom: ${ defaultBottom + 19 }px; transform: scale(1.1); margin-left:40px;
       `);
@@ -129,18 +129,18 @@ function setCSS_addInBlock(block, id, tempCreatureObject){
 
 // Добавление существ на стол игрока
 function addCreaturesToPlayerField(e, block, tempCreatureObject){
-  if (checkBottomCoordsXY(e.pageX, 530, 1370, e.pageY, 520, 580) &&
-  (block.attributes.handcard || block.attributes.sell) && game.battle === false) {
+  if ( game.battle === false && checkBottomCoordsXY(e.pageX, 406, 1355, e.pageY, 508, 653) &&
+  (block.attributes.handcard || block.attributes.sell)) {
     block.onmouseup = function(){
       block.style.cssText = `z-index:auto; position:relative; left:0; top:0; float: left; `;
       document.onmousemove = null;
-      if(checkBottomCoordsXY(e.pageX, 500, 630, e.pageY, 520, 600)) setCSS_addInBlock(block, 0, tempCreatureObject);
-      else if(checkBottomCoordsXY(e.pageX, 631, 760, e.pageY, 520, 600)) setCSS_addInBlock(block, 1, tempCreatureObject);
-      else if(checkBottomCoordsXY(e.pageX, 761, 890, e.pageY, 520, 600)) setCSS_addInBlock(block, 2, tempCreatureObject);
-      else if(checkBottomCoordsXY(e.pageX, 891, 1020, e.pageY, 520, 600)) setCSS_addInBlock(block, 3, tempCreatureObject);
-      else if(checkBottomCoordsXY(e.pageX, 1021, 1150, e.pageY, 520, 600)) setCSS_addInBlock(block, 4, tempCreatureObject);
-      else if(checkBottomCoordsXY(e.pageX, 1151, 1280, e.pageY, 520, 600)) setCSS_addInBlock(block, 5, tempCreatureObject);
-      else if(checkBottomCoordsXY(e.pageX, 1281, 1410, e.pageY, 520, 600)) setCSS_addInBlock(block, 6, tempCreatureObject);
+      if(checkBottomCoordsXY(e.pageX, 406, 545, e.pageY, 508, 653)) setCSS_addInBlock(block, 0, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 546, 685, e.pageY, 508, 653)) setCSS_addInBlock(block, 1, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 686, 825, e.pageY, 508, 653)) setCSS_addInBlock(block, 2, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 826, 965, e.pageY, 508, 653)) setCSS_addInBlock(block, 3, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 966, 1105, e.pageY, 508, 653)) setCSS_addInBlock(block, 4, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 1106, 1245, e.pageY, 508, 653)) setCSS_addInBlock(block, 5, tempCreatureObject);
+      else if(checkBottomCoordsXY(e.pageX, 1246, 1355, e.pageY, 508, 653)) setCSS_addInBlock(block, 6, tempCreatureObject);
       else {block.style.cssText += `left:0px; top:0px; position: relative; margin-left:0;`}
     }
   }
@@ -154,7 +154,7 @@ function addCreaturesToPlayerField(e, block, tempCreatureObject){
  * @param {object} att
  */
 class Creature {
-  constructor(tier, attack, hp, type, id, unique, width = 100, height = 130) {
+  constructor(tier, attack, hp, type, id, unique, width = 110, height = 145) {
     // get stats from bd , add tier , remove hp & attack, add hp in battle, hp after battle = hp, new hp (if is increase) = hp + up
 
     this.element = Elements.TopCreatureBlock;
@@ -208,15 +208,18 @@ class Creature {
     this.replaceHPCSS(this.Creatureblock.childNodes[4]);
     this.replaceAttackCSS(this.Creatureblock.childNodes[3]);
   }
+
   updateVisibility(visible, visibility){
     this.visible = visible;
     this.Creatureblock.style.visibility = visibility;
   }
+
   removeCreatureBlock(){
     this.updateVisibility(false, "hidden");
     this.blockInWhichAddCreatureBlock.removeChild(this.Creatureblock); 
     updateAttribute(this.Creatureblock, this);
   }
+
   setHP(otherHP, array) {
     this.hp = otherHP;
     this.Creatureblock.childNodes[4].textContent = this.hp;
@@ -255,7 +258,7 @@ class Creature {
   
   createCreatureBlock() {
     
-    let creature = createBlock(`creature${this.id}`, `creature`, `z-index:auto`);
+    let creature = createBlock(`creature${this.id}`, `creature`, ``);
     creature.setAttribute("buy", "only for buy");
     topCount++;
 
@@ -390,7 +393,7 @@ class Creature {
             creature.style.marginLeft = 0;
             document.onmousemove = null;
             
-            if(checkBottomCoordsXY(e.pageX, 910, 995, e.pageY, 680, 718) && game.tavern.playerCoins >= 3 && bottomPlayerCreatures.childNodes.length <= 2){
+            if(checkBottomCoordsXY(e.pageX, 884, 1049, e.pageY, 689, 859) && game.tavern.playerCoins >= 3 && bottomPlayerCreatures.childNodes.length <= 2){
               creature.removeAttribute("buy");
               game.tavern.playerCoins -= 3;
               //переписать потом на уникальные id
@@ -404,7 +407,7 @@ class Creature {
               
             }
             else if(checkBottomCoordsXY(e.pageX, 910, 995, e.pageY, 680, 718) &&
-            creature.attributes.buy && bottomPlayerCreatures.childNodes.length <= 2){
+            creature.attributes.buy && bottomPlayerCreatures.childNodes.length <= 2 && game.tavern.playerCoins < 3){
               alert ("Your coins are: " + game.tavern.playerCoins + " but You need 3 or more coins" );
               replaceCSSforBuyCreatures(creature);
             }
@@ -473,7 +476,7 @@ class Creature {
   createHpImage() {
     
     let hpImage = new Image();
-    hpImage.src = `${ImageSrc}/Health.png`;
+    hpImage.src = `${ImageSrc}/battle/Health.png`;
     hpImage.style.cssText += `
     width:35px; height:50px; position:relative; bottom:60px; left:75px; z-index:auto;`;
     return hpImage;
@@ -506,7 +509,7 @@ class Creature {
   createAttackImage() {
     
     let atImage = new Image();
-    atImage.src = `${ImageSrc}/Attack.png`;
+    atImage.src = `${ImageSrc}/battle/Attack.png`;
     atImage.style.cssText = `z-index:auto;
     width:50px; height:57.5px; position:relative; bottom:60px; left:-50px;`;
     return atImage;

@@ -5,11 +5,11 @@ function deleteAllTempCreatures(){
     let tempCreaturesLength = document.getElementsByClassName("tempCreature");
     for (let i = 0; i < tempCreaturesLength.length; i++) all.removeChild(tempCreaturesLength[i])
 }
-function SetTimer(gameTurn){
+async function SetTimer(gameTurn){
     timeText.innerHTML = ''
     let TurnTimer = turn * 10;
     setInterval(() => {
-        if(TurnTimer > 0) {timeText.innerHTML = `${TurnTimer}`; TurnTimer-=15;}//--
+        if(TurnTimer > 0) {timeText.innerHTML = `${TurnTimer}`; TurnTimer-=30;}//--
         else {             
             if(gameTurn){
                 timeText.innerHTML = 'Sec';
@@ -104,7 +104,7 @@ class Game{
         this.enemyArray = [];
         this.createGameHTML();
         this.data.genDB();
-        this.enemyHero = new Hero("topAvatar", "enemyHeroBlock", 40, `${ImageSrc}/Bob.png`, this.tavern.enemyLevel);
+        this.enemyHero = new Hero("topAvatar", "enemyHeroBlock", 40, `${ImageSrc}/tavern/Bob.png`, this.tavern.enemyLevel);
         this.playerHero = new Hero("bottomAvatar", "playerHeroBlock", 40,`${ImageSrc}/Galewing/${origImage}.webp`, this.tavern.playerLevel);
         this.data.addInDB(0, this.enemyHero, this.enemyHero.id);
         this.data.addInDB(0, this.playerHero, this.playerHero.id);
@@ -154,7 +154,7 @@ class Game{
 
        let maxCreaturesForBuy = this.tavern.level >= 5 ? 7:this.tavern.level+2;
        bottomCoinsText.innerHTML = `${this.tavern.playerCoins}/${maxCoins}`
-       upgradeText.innerHTML = `${this.tavern.upgradeBlock1.createCost(this.tavern)}`;
+       upgradeText.innerHTML += `${this.tavern.upgradeBlock1.createCost(this.tavern)}`;
        refreshText.innerHTML = `${this.tavern.refreshBlock1.cost}`
        document.onselectstart = function () { return false; };
        freezeText.innerHTML = `${this.tavern.freezeBlock1.cost}`
@@ -297,7 +297,7 @@ class Game{
            
     }
 
-    addCreatureToBlock(block, playerArray, enemyArr, maxCreaturesToAdd){
+    async addCreatureToBlock(block, playerArray, enemyArr, maxCreaturesToAdd){
         // Переписать след момент 
         // если рандом существо = одному из существ игрока - перерандомить
         // + переписать систему на проверку повторности элементов
