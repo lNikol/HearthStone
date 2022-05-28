@@ -1,13 +1,13 @@
 /**
  * @param {string} element
- * @param {string} id // will be fixed
+ * @param {string} id 
  * @param {string} src
  * @param {number} hp
  * @param {number} tavern
  */
 
 class Hero {
-    constructor(element, id, hp, src, tavern, width = 168, height = 170){ // from bd: id,hp, Image, unic(навык), tavern
+    constructor(element, id, hp, src, tavern, width = 168, height = 170){ 
         this.height = height;
         this.width = width;
         this.model = id;
@@ -40,7 +40,7 @@ class Hero {
     createHeroBlock(element){
           let addHeroIn = document.getElementById(element);
           let HeroBlock = document.createElement("div");
-          HeroBlock.id = this.model; // изменить from db
+          HeroBlock.id = this.model; 
           HeroBlock.style.cssText = `width: ${this.width} px; height: ${this.height}px; `;
           HeroBlock.setAttribute("insidehero", JSON.stringify(this));
           let HpBlock = document.createElement("div"); HpBlock.id = "HpBlock"; 

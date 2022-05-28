@@ -6,6 +6,12 @@ const cardImage = 0;
 const origImage = 1;
 const goldenCardImage = 2;
 
+//genFirstPage.js && generateHtml.js
+const chooseSrc = /[A-z]+\/[A-z]+\/[A-z]+\/1.png/gm;
+
+
+
+
 //generateHTML.js
 const defaultCreatureWidth = 110;
 const defaultCreatureHeight = 145;
@@ -20,13 +26,13 @@ const leftPX = 80;
 
 // creature.js && database.js
 
-let count = 0; // счетчик блоков существ
+let count = 0; // block creature counter
 let globalcount = 0;
 let topCount = 0;
 let bottomCount = 0;
 let playerCoins = 0;
 let heroCount = 0;
-let turn = 9; // 3 - нулевой ход
+let turn = 3; // 3 - 0 turn
 let maxCoins = (turn >= 10) ? 10: turn;
 const timeForTimeout = 1300 + turn * 0.01;
 

@@ -9,7 +9,7 @@
  * @param {number} id
  */
 class Creature2 {
-    constructor(tier, attack, hp, type, id, unique, width = 100, height = 130) {
+    constructor(tier, attack, hp, type, id, unique, width = 120, height = 155) {
       this.unique = unique;
       this.hp = hp;
       this.tier = tier;
@@ -32,11 +32,12 @@ class DataBaseHS{
             [], // tier 4
             [], // tier 5
             [], // tier 6
+            ["Aranna_Starseeker", "Pyramad", "Patchwerk", "Nozdormu"] // HeroImages
         ];
     }
-    addInDB(tier, monster){ // create personal id for every tier, after that get creature by local id
-        if(this.dataBase[tier][monster.id]){ this.dataBase[tier][monster.id] = monster; }
-        else{this.dataBase[tier].push(monster);}
+    addInDB(tier, addCreature){ // create personal id for every tier, after that get creature by local id
+        if(this.dataBase[tier][addCreature.id]){ this.dataBase[tier][addCreature.id] = addCreature; }
+        else{this.dataBase[tier].push(addCreature);}
     }
     
     getDB(){ return this; }

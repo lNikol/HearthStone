@@ -1,15 +1,196 @@
 "use strict";
-// сделать презагрузку html & css
-// fix annimation onmouseover
+
+function addCreatureToBlock(block, playerArr, enmArray, maxToAdd){
+    let data = game.data.dataBase;
+    let check;
+    let array = [];
+
+    let randomCreatureToAdd; 
+    let temp = 0;
+    for(let i = 0; i < maxToAdd; i++){     
+        randomCreatureToAdd = setTier(data, game.tavern.level);
+        if(randomCreatureToAdd !== undefined){
+            if(check === undefined) check = randomCreatureToAdd;
+            while((playerArr.includes(randomCreatureToAdd) || 
+            array.includes(randomCreatureToAdd)) && temp < 25)
+            { randomCreatureToAdd = setTier(data, game.tavern.level); temp++;}
+
+            let ranBlock = randomCreatureToAdd.Creatureblock;
+            if(enmArray !== undefined && game.battle) {
+               enmArray = array;
+               ranBlock.removeAttribute("buy");
+               ranBlock.setAttribute("battle", "in battle");
+            }
+            else if(enmArray !== undefined && !game.battle){
+                ranBlock.removeAttribute("battle");
+                ranBlock.setAttribute("buy", "only for buy");
+            }
+            checkBlockForCreature(randomCreatureToAdd, block, i)
+
+              
+        }
+        check = randomCreatureToAdd;
+        array.push(randomCreatureToAdd);
+    }    
+}
+
+
+function checkBlockForCreature(creature, parent, index){
+    if(!parent.childNodes[index].childNodes[0] && game.battle === true) {
+        creature.updateVisibility(true, "visible")
+        creature.element = Elements.TopCreatureBlock;
+        parent.childNodes[index].appendChild(creature.Creatureblock); 
+    }
+    else if (parent.childNodes[index].childNodes[0] === undefined && game.battle === false) {
+        creature.updateVisibility(true, "visible")
+        creature.element = Elements.TopCreatureBlock;
+        parent.childNodes[index].appendChild(creature.Creatureblock); 
+    }
+    else{index++;}
+}
+
+
+async function refreshSystem(block, playerArray, enemyArr, maxCreaturesToAdd){
+    
+   
+    // Переписать след момент 
+        // если рандом существо = одному из существ игрока - перерандомить
+        // + переписать систему на проверку повторности элементов
+    
+
+
+}
+
+
+function getCreatureObject(parentBlock, battleCreature, i, enemyArr){
+    if (parentBlock.childNodes[i].childNodes[0]) {
+        battleCreature = JSON.parse(parentBlock.childNodes[i].childNodes[0].attributes.insideCreature.nodeValue);
+        let dbCreature = game.data.dataBase[battleCreature.tier][battleCreature.id];
+        if(enemyArr) enemyArr.push(dbCreature);
+        return dbCreature;
+    }            
+}
+
+
+
+//def - defence, att - attack
+function setNewHP(attCreature, forAttDMG, defCreature, forDefDMG){
+    attCreature.setHP(forAttDMG, game.playerArray);
+    defCreature.setHP(forDefDMG, game.enemyArray);
+}
+
+
+function checkDivineShield(firstCreature, secondCreature){
+    for(let i = 0; i < firstCreature.unique.length; i++){
+        if (firstCreature.unique[i] === Unics.Divine_Shield 
+        && firstCreature.Creatureblock.childNodes[5].style.visibility !== "hidden"){
+            setNewHP(firstCreature, firstCreature.hp, 
+            secondCreature, secondCreature.hp - firstCreature.attack);
+            firstCreature.Creatureblock.childNodes[5].style.visibility = "hidden";
+        }
+        else if(secondCreature.unique[i] === Unics.Divine_Shield 
+            && secondCreature.Creatureblock.childNodes[5].style.visibility !== "hidden"){   
+            setNewHP(secondCreature, secondCreature.hp , 
+            firstCreature, firstCreature.hp - secondCreature.attack);
+            secondCreature.Creatureblock.childNodes[5].style.visibility = "hidden";
+        }
+        else{
+            setNewHP(firstCreature, firstCreature.hp - secondCreature.attack, 
+                secondCreature, secondCreature.hp - firstCreature.attack)
+        }
+}    
+}
+
+
+function checkPoison(firstCreature, secondCreature){
+    if(checkCertainUnique(firstCreature, Unics.Poison)){
+        console.log('tyt est poison') 
+        setNewHP(firstCreature, firstCreature.hp - secondCreature.attack, secondCreature, 0)
+    }
+    else if (checkCertainUnique(secondCreature, Unics.Poison)){
+        console.log('tam est poison')
+        setNewHP(secondCreature, secondCreature.hp - firstCreature.attCreature, firstCreature, 0)
+        
+    }
+    else if(checkCertainUnique(firstCreature, Unics.Poison) 
+    && checkCertainUnique(secondCreature, Unics.Poison)){
+        firstCreature.setHP(0, game.playerArray);
+        secondCreature.setHP(0, game.enemyArray);
+    }
+
+   
+}
+
+
+function checkCertainUnique(creatureCheck, unique){
+    return creatureCheck.unique.includes(unique);
+}
+
+
+function updateHPinBattle(enemyBattleCreatureA, playerBattleCreatureA){
+    while((enemyBattleCreatureA!== undefined && enemyBattleCreatureA.hp > 0) &&
+    (playerBattleCreatureA !== undefined && playerBattleCreatureA.hp > 0)){
+        if(checkCertainUnique(playerBattleCreatureA, Unics.Divine_Shield) || checkCertainUnique(enemyBattleCreatureA, Unics.Divine_Shield)){
+            checkDivineShield(playerBattleCreatureA, enemyBattleCreatureA);
+        }
+        else if(checkCertainUnique(playerBattleCreatureA, Unics.Poison) || checkCertainUnique(enemyBattleCreatureA, Unics.Poison)){
+            checkPoison(playerBattleCreatureA, enemyBattleCreatureA);
+        }
+        else{
+            setNewHP(playerBattleCreatureA, playerBattleCreatureA.hp - enemyBattleCreatureA.attack,
+            enemyBattleCreatureA, enemyBattleCreatureA.hp - playerBattleCreatureA.attack);
+        }
+    }           
+
+}
+
+
+function battleSystem(playerBattleCreatureB){
+    enemyHeroBlock.childNodes[1].style.visibility = 'visible';
+
+    let enemyBattleCreature;
+    for(let j = 0; j < game.enemyArray.length; j++){
+        if(game.enemyArray[j].unique.includes(Unics.Taunt)) { enemyBattleCreature = game.enemyArray[j];}
+    }
+    
+    if(enemyBattleCreature !== undefined && enemyBattleCreature.hp > 0){
+        if(enemyBattleCreature.unique.includes(Unics.Taunt)){ updateHPinBattle(enemyBattleCreature, playerBattleCreatureB); }
+    }
+    
+    else{
+        enemyBattleCreature = game.enemyArray[Math.floor(Math.random() * game.enemyArray.length)];
+        updateHPinBattle(enemyBattleCreature, playerBattleCreatureB);
+        for(let i = 0; i < game.enemyArray.length * 10; i++){
+        if(playerBattleCreatureB.hp > 0 && enemyBattleCreature.hp <= 0 
+            && game.enemyArray.includes(enemyBattleCreature)) {
+            delete game.enemyArray[enemyBattleCreature];
+            enemyBattleCreature = game.enemyArray[Math.floor(Math.random() * game.enemyArray.length)];
+            updateHPinBattle(enemyBattleCreature, playerBattleCreatureB);
+        }
+    }
+}
+
+
+}
+
+
+function getCreatures(enemyCreature, playerCreature){
+    for (let i = 0; i < topAllCreaturesBlock.childNodes.length; i++){ enemyCreature = getCreatureObject(topAllCreaturesBlock, enemyCreature, i, game.enemyArray);}
+    for (let i = 0; i < bottomAllCreaturesBlock.childNodes.length; i++){ playerCreature = getCreatureObject(bottomAllCreaturesBlock, playerCreature, i, undefined);}
+}
+
+
 function deleteAllTempCreatures(){
     let tempCreaturesLength = document.getElementsByClassName("tempCreature");
     for (let i = 0; i < tempCreaturesLength.length; i++) all.removeChild(tempCreaturesLength[i])
 }
+
+
 async function SetTimer(gameTurn){
     timeText.innerHTML = ''
     let TurnTimer = turn * 10;
     setInterval(() => {
-        if(TurnTimer > 0) {timeText.innerHTML = `${TurnTimer}`; TurnTimer-=30;}//--
+        if(TurnTimer > 0) {timeText.innerHTML = `${TurnTimer}`; TurnTimer -= 30;}//--
         else {             
             if(gameTurn){
                 timeText.innerHTML = 'Sec';
@@ -18,10 +199,10 @@ async function SetTimer(gameTurn){
                 game.createBattle(playerCoins);
                 timeText.innerHTML = ''
             }
-           game.battle = false; 
         }
        }, 1000);
 }
+
 
 function setTier(data, level){
     let randomForTier = Math.floor(Math.random()*level+1)
@@ -31,6 +212,7 @@ function setTier(data, level){
     while (random === undefined && randomCount < 50) {randomCount++; random = random; }
     return random;
 }
+
 
 function checkWinner(){
     setTimeout(() => {
@@ -55,7 +237,7 @@ function checkWinner(){
                     if(tempArrayForUpdate[i]) {
                     attackForHero += tempArrayForUpdate[i].tier; 
                     game.playerHero.updateHP(game.playerHero.hp - attackForHero);
-                    setTimeout(() => { enemyHeroBlock.childNodes[1].style.visibility = 'hidden'; }, 775); game.deleteTavernCreatures(); game.enemyArray = []; game.createTurn();
+                    setTimeout(() => { enemyHeroBlock.childNodes[1].style.visibility = 'hidden'; game.deleteTavernCreatures(); game.enemyArray = []; game.createTurn(); }, 775);
                 }
             }
                 break;
@@ -64,7 +246,7 @@ function checkWinner(){
                     if(tempArrayForUpdate[i]) {
                     attackForHero += tempArrayForUpdate[i].tier; 
                     game.enemyHero.updateHP(game.enemyHero.hp - attackForHero);
-                    setTimeout(() => { enemyHeroBlock.childNodes[1].style.visibility = 'hidden'; }, 775); game.deleteTavernCreatures(); game.enemyArray = []; game.createTurn();
+                    setTimeout(() => { enemyHeroBlock.childNodes[1].style.visibility = 'hidden'; game.deleteTavernCreatures(); game.enemyArray = []; game.createTurn(); }, 775);
                 }
             }
             
@@ -83,11 +265,12 @@ function checkWinner(){
         
         
     }, (timeForTimeout));
-    game.update();
+    turn++; maxCoins = (turn >= 10) ? 10: turn;
     setTimeout(() => {
         game.tavern.playerCoins = maxCoins;
         game.tavern.update_2(game.tavern.playerCoins);
         game.tavern.update(game.tavern.playerCoins, maxCoins);    
+        if(game.tavern.cost !== 0) game.tavern.upgradeBlock1.updateCost(1);
     }, timeForTimeout);
 }
 
@@ -100,52 +283,30 @@ class Game{
         this.IsTurn = false;
         this.battle = false;
         this.battleCount = 0;
+        this.playerName = '';
         this.playerArray = [];
         this.enemyArray = [];
-        this.createGameHTML();
-        this.data.genDB();
-        this.enemyHero = new Hero("topAvatar", "enemyHeroBlock", 40, `${ImageSrc}/tavern/Bob.png`, this.tavern.enemyLevel);
-        this.playerHero = new Hero("bottomAvatar", "playerHeroBlock", 40,`${ImageSrc}/Galewing/${origImage}.webp`, this.tavern.playerLevel);
-        this.data.addInDB(0, this.enemyHero, this.enemyHero.id);
-        this.data.addInDB(0, this.playerHero, this.playerHero.id);
-        this.updateVisibilityForHp();
-        //this.createFirstHTML();
-
+        generateFirstHTML();
+        this.enemyHero; this.playerHero;
         
     }
+
+    updateChoose(Tchoose){
+        this.choose = Tchoose;
+    }
+
     update(){
         this.enemyHero.tavern = this.tavern.level;
         this.playerHero.tavern = this.tavern.level;
     }
-    createFirstHTML(){
-        //rewrite
-        
-        //this.createGameHTML();
-    // let firstPage = createBlock('firstPage', '', `width: 400px; height:400px; margin: auto auto;`)
-    
-    // let input = document.createElement('input');
-    // input.id = 'input';
-    // input.style.cssText = `width: 200px; height:100px; margin:auto auto;`;
 
-    // let button = document.createElement('button');
-    // button.style.cssText = `width:125px; height: 50px; margin-left:10px;`;
-    // button.textContent = 'Write Your name';
-    // button.onclick = () => {
-    //     localStorage.setItem("Name", input.value); 
-    //     console.log(localStorage);
-    //     document.body.removeChild(firstPage);
-    //     this.createGameHTML();
-    // };
 
-    // firstPage.append(input);
-    // firstPage.append(button);
-    // document.body.append(firstPage);
-    }
     updateVisibilityForHp(){
         this.battle === false ? enemyHeroBlock.childNodes[1].style.visibility = 'hidden': enemyHeroBlock.childNodes[1].style.visibility = 'visible';
     }
-    createGameHTML(){
 
+    createGameHTML(){
+ 
        const start = new Date().getTime();
        generateGameHTML();
        playerCoins = maxCoins;
@@ -179,95 +340,10 @@ class Game{
             return returnArray;
         }
         
-        function getCreatureObject(parentBlock, battleCreature, i, enemyArr){
-            if (parentBlock.childNodes[i].childNodes[0]) {
-                battleCreature = JSON.parse(parentBlock.childNodes[i].childNodes[0].attributes.insideCreature.nodeValue);
-                let dbCreature = game.data.dataBase[battleCreature.tier][battleCreature.id];
-                if(enemyArr) enemyArr.push(dbCreature);
-                return dbCreature;
-            }            
-        }
-
-        function updateHPinBattle(enemyBattleCreatureA, playerBattleCreatureA){
-            while(enemyBattleCreatureA.hp > 0 && playerBattleCreatureA.hp > 0){
-                if(playerBattleCreatureA.unique.includes(Unics.Divine_Shield)){
-                    for(let i = 0; i < playerBattleCreatureA.unique.length; i++){
-                        if (playerBattleCreatureA.unique[i] === Unics.Divine_Shield && playerBattleCreatureA.Creatureblock.childNodes[5].style.visibility !== "hidden"){
-                            enemyBattleCreatureA.setHP(enemyBattleCreatureA.hp - playerBattleCreatureA.attack, game.enemyArray);
-                            playerBattleCreatureA.setHP(playerBattleCreatureA.hp, game.playerArray);
-                            playerBattleCreatureA.Creatureblock.childNodes[5].style.visibility = "hidden"
-                        } else {
-                            enemyBattleCreatureA.setHP(enemyBattleCreatureA.hp - playerBattleCreatureA.attack, game.enemyArray);
-                            playerBattleCreatureA.setHP(playerBattleCreatureA.hp - enemyBattleCreatureA.attack, game.playerArray);    
-                        };
-                    }    
-                }
-                else if(enemyBattleCreatureA.unique.includes(Unics.Divine_Shield)){
-                    for(let i = 0; i < enemyBattleCreatureA.unique.length; i++){
-                        if (enemyBattleCreatureA.unique[i] === Unics.Divine_Shield && enemyBattleCreatureA.Creatureblock.childNodes[5].style.visibility !== "hidden"){
-                            playerBattleCreatureA.setHP(playerBattleCreatureA.hp - enemyBattleCreatureA.attack, game.playerArray);
-                            enemyBattleCreatureA.setHP(enemyBattleCreatureA.hp, game.enemyArray);
-                            enemyBattleCreatureA.Creatureblock.childNodes[5].style.visibility = "hidden"
-                        } else{
-                            playerBattleCreatureA.setHP(playerBattleCreatureA.hp - enemyBattleCreatureA.attack, game.playerArray);
-                            enemyBattleCreatureA.setHP(enemyBattleCreatureA.hp - playerBattleCreatureA.attack, game.enemyArray);
-                        }
-                    }   
-                }
-                else if(playerBattleCreatureA.unique.includes(Unics.Poison) || enemyBattleCreatureA.unique.includes(Unics.Poison)){
-                    if(playerBattleCreatureA.unique.includes(Unics.Poison)){
-                        console.log('tyt est poison')
-                        playerBattleCreatureA.setHP(playerBattleCreatureA.hp - enemyBattleCreatureA.attack, game.playerArray);
-                        enemyBattleCreatureA.setHP(0, game.enemyArray);
-                    }
-                    else{
-                        console.log('tam est poison')
-                        enemyBattleCreatureA.setHP(enemyBattleCreatureA.hp - playerBattleCreatureA.attack, game.enemyArray)
-                        playerBattleCreatureA.setHP(0, game.playerArray);
-                    }
-                }
-            else{
-                enemyBattleCreatureA.setHP(enemyBattleCreatureA.hp - playerBattleCreatureA.attack, game.enemyArray);
-                playerBattleCreatureA.setHP(playerBattleCreatureA.hp - enemyBattleCreatureA.attack, game.playerArray);
-            }
-            
-        }           
         
-        }
-
-        function battleSystem(playerBattleCreatureB){
-            enemyHeroBlock.childNodes[1].style.visibility = 'visible';
-            let enemyBattleCreature;
-            for(let j = 0; j < game.enemyArray.length; j++){
-                if(game.enemyArray[j].unique.includes(Unics.Taunt)) { enemyBattleCreature = game.enemyArray[j];}
-            }
-            
-            if(enemyBattleCreature !== undefined && enemyBattleCreature.hp > 0){
-                if(enemyBattleCreature.unique.includes(Unics.Taunt)){ updateHPinBattle(enemyBattleCreature, playerBattleCreatureB); } //rewrite 
-            }
-            
-            else{
-                enemyBattleCreature = game.enemyArray[Math.floor(Math.random() * game.enemyArray.length)];
-                updateHPinBattle(enemyBattleCreature, playerBattleCreatureB);
-                for(let i = 0; i < game.enemyArray.length * 30; i++){
-                if(playerBattleCreatureB.hp > 0 && enemyBattleCreature.hp <= 0 && game.enemyArray.includes(enemyBattleCreature)) {
-                    delete game.enemyArray[enemyBattleCreature]
-                    enemyBattleCreature = game.enemyArray[Math.floor(Math.random() * game.enemyArray.length)];
-                    updateHPinBattle(enemyBattleCreature, playerBattleCreatureB);
-                }
-            }
-        }
-        
-        
-        }
-
-        function getCreatures(enemyCreatureA, playerCreatureA){
-            for (let i = 0; i < topAllCreaturesBlock.childNodes.length; i++){ enemyCreatureA = getCreatureObject(topAllCreaturesBlock, enemyCreature, i, game.enemyArray);}
-            for (let i = 0; i < bottomAllCreaturesBlock.childNodes.length; i++){ playerCreatureA = getCreatureObject(bottomAllCreaturesBlock, playerCreature, i, undefined);}
-        }
 
         if(this.battle === true && this.battleCount === 0){
-            this.addCreatureToBlock(topAllCreaturesBlock, this.playerArray, this.enemyArray, getNewPlayerBattleArray(this.playerArray).length);
+            addCreatureToBlock(topAllCreaturesBlock, this.playerArray, this.enemyArray, getNewPlayerBattleArray(this.playerArray).length);
             getCreatures(enemyCreature, playerCreature);
 
             for(let i = 0; i < this.playerArray.length; i++){
@@ -279,7 +355,7 @@ class Game{
             }
             
             checkWinner();
-            turn++; maxCoins = (turn >= 10) ? 10: turn;
+            
             
         }
         
@@ -288,52 +364,22 @@ class Game{
 
     createTurn(){
         this.battleCount = 0;
-        this.battleCount = 0;
         this.IsTurn = true; this.battle = false;
         SetTimer(this.IsTurn)
-        refreshBlock.onclick = function() {game.tavern.refreshBlock1.refreshTavern(topAllCreaturesBlock, maxCoins);} // in the future 1 will replace to the tier of creature
+        refreshBlock.onclick = function() {game.tavern.refreshBlock1.refreshTavern(topAllCreaturesBlock, maxCoins); refreshText.innerHTML = 1;} 
         upgradeBlock.onclick = function() {game.tavern.upgradeBlock1.upgradeCost(game.tavern)};
-        setTimeout(() => { this.addCreatureToBlock(topAllCreaturesBlock, this.playerArray, undefined, this.tavern.maxCreatures) }, 1);
+        setTimeout(() => { addCreatureToBlock(topAllCreaturesBlock, this.playerArray, undefined, this.tavern.maxCreatures) }, 1);
            
     }
 
-    async addCreatureToBlock(block, playerArray, enemyArr, maxCreaturesToAdd){
-        // Переписать след момент 
-        // если рандом существо = одному из существ игрока - перерандомить
-        // + переписать систему на проверку повторности элементов
-        let data = this.data.dataBase;
-        let check;
-        let array = [];
-
-        let randomCreatureToAdd; 
-        let temp = 0;
-        for(let i = 0; i < maxCreaturesToAdd; i++){     
-            randomCreatureToAdd = setTier(data, this.tavern.level);
-            if(randomCreatureToAdd !== undefined){
-                if(check === undefined) check = randomCreatureToAdd;
-                while((playerArray.includes(randomCreatureToAdd) || array.includes(randomCreatureToAdd)) && temp < 25) randomCreatureToAdd = setTier(data, this.tavern.level); temp++;
-                if(enemyArr !== undefined && this.battle === true) {
-                   let ranBlock = randomCreatureToAdd.Creatureblock;
-                   enemyArr = array;
-                   ranBlock.removeAttribute("buy");
-                   ranBlock.setAttribute("battle", "in battle");
-                };
-                randomCreatureToAdd.updateVisibility(true, "visible")
-                randomCreatureToAdd.element = Elements.TopCreatureBlock;
-                block.childNodes[i].appendChild(randomCreatureToAdd.Creatureblock);   
-            }
-            check = randomCreatureToAdd;
-            array.push(randomCreatureToAdd)
-        }    
-
-    }
+    
     getCreaturesFromParentBlock(parent){
         let tempObjectCreature = JSON.parse(parent.childNodes[0].attributes.insideCreature.nodeValue);
         let tempDataCreature = this.data.dataBase[tempObjectCreature.tier][tempObjectCreature.id];
         return tempDataCreature;
     }
     deleteTavernCreatures(){
-        // Удаление оставшихся временных блоков существ (их начальная информация)
+        // delete tempBlocks which have start creatures info
         deleteAllTempCreatures();
 
         for (let i = 0; i < topAllCreaturesBlock.childNodes.length; i++){
@@ -345,13 +391,4 @@ class Game{
             }
         }
     }
-
-    drawPlayerArray(){
-        //console.log(this.playerArray);            
-    }
-
-    /**
-     * @param {Object} monster1 
-     * @param {Object} monster2 
-    */
 }

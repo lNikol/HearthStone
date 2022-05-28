@@ -1,12 +1,51 @@
 html{
     overflow:  hidden;
 }
+
+/* for all pages */
+.popUp{
+    width: 450px; 
+    height: 100px; 
+    color:rgb(255, 196, 0);
+    position:absolute; 
+    font-weight: bold;
+    font-size: 22px;
+    left: 41.5%; 
+    top: 5%;
+    z-index: 200;
+    text-shadow: forestgreen 1px 1px 0;
+    
+}
+
+/* for page where choose */
+
+.heroForChoose{
+    max-width: 35%; max-height: 130px; min-width: 15%;
+    margin: 15px;
+    width: 35%;
+    
+}
+
+.blockForChoose{
+    text-align: center;
+}
+
+/* for battlegrounds page */
+
 .topCreatureBlock, .bottomCreatureBlock{
-    width: 110px;
-    height: 145px;
+    width: 120px;
+    height: 155px;
     margin: 15px;
     margin-bottom: 0;
     float: left;
+}
+
+.uniqueImage{
+    width:25px;
+    height:25px; 
+    position:relative; 
+    z-index:auto; 
+    margin-left:40px;
 }
 
 .creature{
@@ -39,7 +78,6 @@ html{
     left:136px;
 }
 
-
 .HeroImg{
     border-top-right-radius: 50%; 
     border-top-left-radius: 50%; 
@@ -53,4 +91,12 @@ html{
     left:-9.2%;
     top: 5%;
     position: relative;
+}
+
+.uniqueBlock{
+    border-radius:50%;
+    opacity:0.3; 
+    position:relative; 
+    z-index:auto;
+    user-select:none;    
 }

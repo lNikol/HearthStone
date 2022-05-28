@@ -13,9 +13,7 @@ class Tavern{
 
         this.update(this.playerCoins, maxCoins);
     } 
-    setTavern(){
-        return this;
-    }
+
     update(coins, tempMaxCoins){
         this.playerCoins = coins;
         bottomCoinsText.innerHTML = `${this.playerCoins}/${tempMaxCoins}`;
@@ -29,6 +27,7 @@ class Tavern{
                 if(tempCoinBlock) tempCoinBlock.style.visibility = "visible"; 
             }
     } 
+
     updateMaxCreaturesForBuy(){
         this.maxCreatures = this.level >= 5 ? 7:this.level+2;
         return this.maxCreatures;
@@ -39,14 +38,6 @@ class Tavern{
      */
     update_2(coins){
         this.tempCoins = coins;
-    }
-    
-    updateTurn(t, playerCoins, maxCoins){
-    turn = t;
-    maxCoins = turn >= 10 ? 10: turn;
-    this.update_2(maxCoins);
-    playerCoins = maxCoins;
-    this.update(playerCoins, maxCoins);
     }
 
     updateTavernCost(){
@@ -80,22 +71,30 @@ class UpBlock{
     constructor(tavern){
         this.createUpgradeBlock();
         this.tavern = tavern;
+        this.firstCost = 0;
         this.cost = this.createCost(this.tavern);
     }
 
     createCost(tavern){
         switch(tavern.level){
-            case 1: this.cost = 5; return `${this.cost}`; // on level 2 
-            case 2: this.cost = 7; return `${this.cost}`; // on level 3
-            case 3: this.cost = 8; return `${this.cost}`; // on level 4
-            case 4: this.cost = 11; return `${this.cost}`; // on level 5
-            case 5: this.cost = 10; return `${this.cost}`; // on level 6
+            case 1: this.cost = 5; this.firstCost = this.cost; return `${this.cost}`; // on level 2 
+            case 2: this.cost = 7; this.firstCost = this.cost; return `${this.cost}`; // on level 3
+            case 3: this.cost = 8; this.firstCost = this.cost; return `${this.cost}`; // on level 4
+            case 4: this.cost = 11; this.firstCost = this.cost; return `${this.cost}`; // on level 5
+            case 5: this.cost = 10; this.firstCost = this.cost; return `${this.cost}`; // on level 6
             case 6: this.cost = 0; return ''; 
             default: break;
         }
         return this.cost;
     }
-    
+
+    updateCost(cost){
+        if(this.cost>0){
+        this.cost -= cost;
+        this.setCostInBlock(this.cost);
+        }
+    }
+
     upgradeCost(tavern){ 
         if(tavern.playerCoins >= this.cost && game.tavern.level !== 6 && game.battle === false){
             tavern.playerCoins -= this.cost;
@@ -104,21 +103,18 @@ class UpBlock{
             this.createCost(tavern); tavern.updateMaxCreaturesForBuy();
             this.setCostInBlock(this.createCost(tavern));
         }
-        else if(tavern.playerCoins <= this.cost && game.battle === false) alert(`You have ${tavern.playerCoins}/${this.cost} for upgrade your tavern`)
-        else return;
-
-        // if(monster.tier == 1 && monster.type == CreatureTypes.Pirate){ //battlecry pirate 1*
-        // this.cost -=1; // наброски, но надо изменить, т.к при каждом движении мыши оно тнимает
-        // console.log(this.cost)
-        // }
-        // else return;
+        else if(tavern.playerCoins <= this.cost && game.battle === false) {checkPopUp(all); genPopUpBlock(all, `You have ${tavern.playerCoins}/${this.cost} for upgrade your tavern`)}
+        else if(tavern.level === 6 && game.battle === false){checkPopUp(all); genPopUpBlock(all, 'Your level of tavern is maxed');}
+        else {checkPopUp(all); genPopUpBlock(all, 'Right now combat you cannot upgrade');}
     }
     
     createUpgradeBlock(){
         upgradeBlock.setAttribute("UpBlock", JSON.stringify(this.setUpgradeBlock()));
     } 
+
     setCostInBlock(coin){
-        upgradeText.innerHTML = coin;
+        if(this.cost !== this.firstCost) {upgradeText.style.color = "lightgreen"; upgradeText.innerHTML = coin;}
+        else {upgradeText.style.color = "white"; upgradeText.innerHTML = coin;}
     }
 
     setUpgradeBlock(){
@@ -134,18 +130,40 @@ class refBlock{
         this.cost = cost;
         this.rBlock = this.createRefreshBlock();
     }
+
+    updateCost(cost){
+        this.cost -= cost;
+        refreshText.innerHTML = this.cost;
+        this.setCostInBlock(this.cost);
+    }
+
+    setCostInBlock(){
+        if(this.cost !== 1) {refreshText.style.color = "lightgreen";}
+        else {refreshText.style.color = "white"; }
+    }
+
     createRefreshBlock(){
         refreshBlock.setAttribute("refBlock", JSON.stringify(this.setRefreshBlock()))
     }
+
     setRefreshBlock(){
         return this;
     }
+
     refreshTavern(block, maxAmountOfCoins){
-        if(game.tavern.playerCoins >= 1 && game.battle === false){
-            game.tavern.playerCoins -= this.cost; game.tavern.update(game.tavern.playerCoins, maxAmountOfCoins)
-            game.deleteTavernCreatures();
-            game.addCreatureToBlock(block, game.playerArray, game.enemyArray, game.tavern.maxCreatures);
-        }
-        else if(game.tavern.playerCoins < 1){alert("You need 1 coin for refresh tavern")}
+        setTimeout(() => {
+            if(game.tavern.playerCoins >= 1){
+                if(game.battle === false){
+                    refreshCost(this, block, maxAmountOfCoins);
+                    if(this.cost === 0){
+                        this.cost = 1;
+                    }
+                    
+                }
+                else{checkPopUp(all); genPopUpBlock(all, "Right now combat, you cannot refresh")}
+            }
+            else{checkPopUp(all); genPopUpBlock(all, "You need 1 coin for refresh tavern")}
+
+        }, 100);       
     }
 }
